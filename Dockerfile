@@ -2,16 +2,18 @@ FROM eclipse-temurin:17-jdk-focal
 
 WORKDIR /app
 
-# Copy POM file and source code
-COPY pom.xml ./
-RUN apt-get update && apt-get install -y maven
-RUN mvn dependency:go-offline
+# Copy Maven Wrapper files
+COPY .mvn/ .mvn
+COPY mvnw mvnw.cmd pom.xml ./
+
+RUN ./mvnw dependency:go-offline
 
 COPY src ./src
 
-RUN mvn clean package -DskipTests
+RUN ./mvnw clean package -DskipTests
 
-COPY target/*.jar app.jar
+# Instead of copying a specific .jar, copy all files and rename the .jar we need
+RUN cp target/*.jar app.jar
 
 EXPOSE 8080
 
